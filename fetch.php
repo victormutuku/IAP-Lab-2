@@ -1,5 +1,4 @@
 <?php
-session_start();
 include_once 'database.php';
 include_once 'user.php';
 
@@ -42,12 +41,25 @@ if(isset($_POST['signup'])){
 }
 if(isset($_POST['login'])){
     $Email = $_POST["Email"];
-    $Passkey = password_hash($_POST["Passkey"], PASSWORD_DEFAULT);
+    $Passkey = $_POST["Passkey"];
 
     $user = new User();
     $user->setEmailAddress($Email);
     $user->setPassKey($Passkey);
     $login = $user->login($pdo);
+    $useridentification = $user->getUserID();
+    header("Location: homepage.php?id=$useridentification");
     echo $login;
+}
+
+if (isset($_POST['changepassword'])){
+    $OldPassword = $_POST['oldpassword'];
+    $NewPassword = $_POST['newpassword'];
+
+    $user = new User();
+    $user->setPassKey($OldPassword);
+    $user->setNewPassword($NewPassword);
+    $changePassword = $user->changePassword($pdo);
+    echo $changePassword;
 }
 ?>

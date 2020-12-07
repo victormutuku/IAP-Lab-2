@@ -1,5 +1,6 @@
 <?php
 include_once 'account.php';
+session_start();
     class User implements Account{
         // User Details
         private $userID;
@@ -13,6 +14,9 @@ include_once 'account.php';
         private $dateCreated;
         // Password Verification
         private $PasswordVerify;
+        private $userSession_id;
+        // Password Change
+        private $newPassword;
 
         public function getFirstName()
         {
@@ -123,6 +127,29 @@ include_once 'account.php';
             $this->PasswordVerify = $PasswordVerify;
             return $this;
         }
+        
+        public function getSession_id()
+        {
+            return $this->userSession_id;
+        }
+
+        public function setSession_id($userSession_id)
+        {
+            $this->userSession_id = $userSession_id;
+            return $this;
+        }
+
+        public function getNewPassword()
+        {
+            return $this->newPassword;
+        }
+
+        public function setNewPassword($newPassword)
+        {
+            $this->newPassword = $newPassword;
+            $this;
+        }
+
         public function register($pdo){
             try {
                 $stm = $pdo->prepare("INSERT INTO user_details(FirstName, MiddleName, LastName, Email_Address, City_Of_Residence, Profile_Picture, UserPassword, DateCreated) VALUES(?,?,?,?,?,?,?,?)");
@@ -133,31 +160,38 @@ include_once 'account.php';
                 return $e->getMessage();
             }
         }
+
         public function login($pdo){
             try{
-                // $record = $pdo->prepare("SELECT UserPassword FROM user_details WHERE Email_Address = ?");
-                // $record->execute([$this->emailAddress]);
-                // $gotten = $record->fetch();
-                // $this->PasswordVerify = $gotten['UserPassword'];
+                $record = $pdo->prepare("SELECT UserPassword FROM user_details WHERE Email_Address = ?");
+                $record->execute([$this->emailAddress]);
+                $gotten = $record->fetch();
+                $this->PasswordVerify = $gotten['UserPassword'];
 
-                // if(password_verify($this->passKey, $this->PasswordVerify)){
-                    $stmt = $pdo->prepare("SELECT User_ID FROM user_details WHERE Email_Address = ? AND UserPassword = ?");
-                    $stmt->execute([$this->emailAddress, $this->passKey]);
+                if(password_verify($this->passKey, $this->PasswordVerify)){
+                    // echo "true";
+                
+                    $stmt = $pdo->prepare("SELECT * FROM user_details WHERE Email_Address = ? AND UserPassword = ?");
+                    $stmt->execute([$this->emailAddress, $this->PasswordVerify]);
                     $found = $stmt->fetch();
 
-                    $this->userID = $found['User_ID'];
+                    $this->userID = $found['iduser'];
                     $this->firstName = $found['FirstName'];
                     $this->middleName = $found['MiddleName'];
                     $this->lastName = $found['LastName']; 
                     $this->cityOfResidence = $found['City_Of_Residence'];
                     $this->profilePicture = $found['Profile_Picture'];
-
-                    $stmp  = $pdo->prepare("INSERT INTO login_session(User_ID, emailAddress)VALUES(?,?)");
-                    $stmp->execute([$this->userID, $this->emailAddress]);
+                    
+                    $_SESSION['firstname'] = $this->firstName;
+                    $this->userSession_id = session_id();
+                    $stmp  = $pdo->prepare("INSERT INTO login_session(iduser, Firstname, emailAddress, Usersession_id)VALUES(?,?,?,?)");
+                    $stmp->execute([$this->userID, $this->firstName, $this->emailAddress, $this->userSession_id]);
                     $stmp = null;
-                // }else{
-                //     header("Location: index.php?login=credentials");
-                // }
+                    
+                }else{
+                    // echo "false";
+                    // header("Location: index.php?login=credentials");
+                }
        
             }catch(PDOException $e){
                 return $e->getMessage();
@@ -167,10 +201,16 @@ include_once 'account.php';
         }
 
         public function changePassword($pdo){
-
+            try {
+                
+                $stm = $pdo->prepare("UPDATE user_details SET UserPassword = ? WHERE iduser = ?");
+                $stm->execute([$this->newPassword]);
+            } catch (PDOException $e) {
+                return $e->getMessage();
+            }
         }
         public function logout($pdo){
-            
+            session_destroy();
         }
 
     }

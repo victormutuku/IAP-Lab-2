@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>App Interface</title>
+        <title>Login</title>
         <link rel="stylesheet" href="signup.css" type="text/css">
     </head>
     <body>
@@ -19,7 +19,7 @@
                     <br>
                 </div>
                 <div>
-                    <button type="submit" name="login" class="button" ><a href="homepage.php">Login</a></button>
+                    <button type="submit" name="login" class="button">Login</button>
                     <br>
                 </div>
             </div>
