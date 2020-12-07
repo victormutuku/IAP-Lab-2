@@ -219,8 +219,11 @@ session_start();
                 return $e->getMessage();
             }
         }
+
         public function logout($pdo){
-            session_destroy();
+            session_unset();
+            session_destroy();       
+            
         }
 
     }
