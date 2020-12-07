@@ -202,9 +202,19 @@ session_start();
 
         public function changePassword($pdo){
             try {
-                
+                $record = $pdo->prepare("SELECT UserPassword FROM user_details WHERE iduser = ?");
+                $record->execute([$this->userID]);
+                $gotten = $record->fetch();
+                $this->PasswordVerify = $gotten['UserPassword'];
+
+                if(password_verify($this->passKey, $this->PasswordVerify)){
                 $stm = $pdo->prepare("UPDATE user_details SET UserPassword = ? WHERE iduser = ?");
-                $stm->execute([$this->newPassword]);
+                $stm->execute([$this->newPassword, $this->userID]);
+                $stm= null;
+
+                }else{
+                    header("Location: passwordchange.php?oldpassword=false");
+                }
             } catch (PDOException $e) {
                 return $e->getMessage();
             }

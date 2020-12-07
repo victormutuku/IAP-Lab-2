@@ -53,13 +53,16 @@ if(isset($_POST['login'])){
 }
 
 if (isset($_POST['changepassword'])){
+    $userid =$_GET['id'];
     $OldPassword = $_POST['oldpassword'];
-    $NewPassword = $_POST['newpassword'];
+    $NewPassword = password_hash($_POST['newpassword'], PASSWORD_DEFAULT) ;
 
     $user = new User();
+    $user->setUserID($userid);
     $user->setPassKey($OldPassword);
     $user->setNewPassword($NewPassword);
     $changePassword = $user->changePassword($pdo);
+    header("Location: homepage.php?id=$userid");
     echo $changePassword;
 }
 ?>
